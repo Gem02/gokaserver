@@ -16,7 +16,8 @@ app.use(express.json());
 app.use(helmet());
 app.use(cors({
     origin: process.env.REACTURL,
-    credentials: true
+    methods: 'GET,POST,PUT,DELETE',
+    credentials: true,
 }));
 app.use(globalLimiter);
 app.use('/api/auth', authRoutes);
