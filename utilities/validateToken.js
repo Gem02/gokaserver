@@ -12,7 +12,7 @@ const renewToken = (req, res) =>{
      
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
         if (err) {
-             res.json({ error: 'Invalid refresh token' });
+             res.status(400).json({ error: 'Invalid refresh token' });
         }
         if (decoded) {
             const newAccessToken = generateAccessToken(decoded._id, decoded.email, decoded.role);
