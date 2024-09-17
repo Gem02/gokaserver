@@ -5,17 +5,17 @@ const verifyToken = async (req, res, next) =>{
     const accessToken = req.cookies.accessToken;
     if (!accessToken) {
         try {
-            await renewToken(req, res);
+            renewToken(req, res);
             next();
         } catch (error) {
-            console.log('error renewing token');
+            console.log(error)
         }
         
     } else{
         jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, async(err, decoded) =>{
             if (err) {
                 try {
-                    await renewToken(req, res);
+                    renewToken(req, res);
                     next();
                 } catch (error) {
                     console.log('error renewing from verify');

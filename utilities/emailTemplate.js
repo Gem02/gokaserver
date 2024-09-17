@@ -50,4 +50,27 @@ const sendWelcomEmail = async (email, name) => {
     });
     console.log(`welcome email sent: ${data}`);
 };
-module.exports = { sendVerificationEmail, sendWelcomEmail };
+
+const sendVerificationPassword = async (email, token) => {
+    try {
+    const info = await transporter.sendMail({
+        from: 'noreply',
+        to: email,
+        subject: 'Forgot password on Goka',
+        html: `<div>
+                    <h1> Forgot password email verification </h1>
+                    <h4>Your email verification code to change password on Goka is: </h4>
+                    <h2>${token}</h2>
+                    <p>This code will expires in 5 mins</p>
+                </div>`
+
+    });
+    console.log('Verification code sent successfully');
+    } catch (error) {
+       // return 'error sending email';
+        console.log('error sending email');
+
+    }
+
+};
+module.exports = { sendVerificationEmail, sendWelcomEmail, sendVerificationPassword };

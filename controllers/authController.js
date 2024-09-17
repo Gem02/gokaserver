@@ -1,6 +1,6 @@
 const UserModel = require('../models/User');
 const { generateAccessToken, generateRefreshToken } = require('../utilities/generateToken');
-const { sendVerificationEmail, sendWelcomEmail } = require('../utilities/emailTemplate');
+const { sendVerificationEmail, sendWelcomEmail, sendVerificationPassword } = require('../utilities/emailTemplate');
 const bcrypt = require('bcrypt');
 const VerificationCode = require('../models/VerificationCode');
 
@@ -12,12 +12,17 @@ const preRegisteration = async (req, res) =>{
     
         let user = await VerificationCode.findOne({email});
         if (user) {
+            return res.status(400).json({message: 'Error try again later'})
+        }
+        const validUser = await UserModel.findOne({email});
+        if (validUser){
             return res.status(400).json({message: 'This is email is already in use'})
         }
-        user = await VerificationCode.create({ email, name, token });
 
+        user = await VerificationCode.create({ email, name, token });
         sendVerificationEmail(email, name, token);
-        return res.status(200).json({message: 'verification sent'});
+        return res.status(200).json({message: 'verification sent', status: true});
+    
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Sorry a server error occured' });
@@ -25,6 +30,7 @@ const preRegisteration = async (req, res) =>{
 };
 
 const verifyCode = async (req, res) => {
+    console.log('arrived here')
     try {
         const { email, code } = req.body;
         const user = await VerificationCode.findOne({ email });
@@ -33,11 +39,31 @@ const verifyCode = async (req, res) => {
         }
         
         await VerificationCode.updateOne({ email }, { $unset: { token: 1 } });
-        res.status(200).json({ message: 'Email verified successfully' });
+        res.status(200).json({ message: 'Email verified successfully', status: true });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: 'Server error' });
     }
+};
+
+
+const changepassword = async (req, res) => {
+    try {
+     const { email, password } = req.body.userData;
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: 'User does not exist' });
+    }
+
+    user.password = password;
+    await user.save();
+
+    return res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
 
@@ -77,7 +103,7 @@ const login = async (req, res) =>{
 
         const accessToken =  generateAccessToken(userInfo._id, userInfo.email, userInfo.role, userInfo.name);
         const refreshToken = generateRefreshToken(userInfo._id, userInfo.email, userInfo.role, userInfo.name);
-
+        
         res.cookie('accessToken', accessToken, {
             maxAge: 1 * 60 * 1000,
             httpOnly: true,
@@ -103,7 +129,6 @@ const login = async (req, res) =>{
             upgraded: userInfo.upgraded
         }); 
 
-        console.log('login sucess');
     } catch (error) {
         return res.status(400).json({message: error});
     }
@@ -125,4 +150,30 @@ const logout = (req, res) => {
 
 }
 
-module.exports = { registerUser, login, logout, preRegisteration, verifyCode };
+const passResetRegisteration = async(req, res) =>{
+    try {
+        const {email} = req.body;
+        const token = Math.floor(Math.random() * (999999 - 100000 + 1) + 100000);
+    
+        let user = await VerificationCode.findOne({email});
+        if (user) {
+            return res.status(400).json({message: 'Error try again later'})
+        }
+        const validUser = await UserModel.findOne({email});
+
+        if (validUser){
+            const name = 'UNKNOWN';
+            user = await VerificationCode.create({ email, name, token });
+            sendVerificationPassword(email, token);
+            return res.status(200).json({message: 'verification sent', status: true});
+        } else{
+            return res.status(400).json({message: 'No account is linked to this email'})
+        }
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Sorry a server error occured' });
+    }
+}
+
+module.exports = { registerUser, login, logout, preRegisteration, verifyCode, changepassword, passResetRegisteration };

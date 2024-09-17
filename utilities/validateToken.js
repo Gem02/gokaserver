@@ -6,18 +6,20 @@ const renewToken = (req, res) =>{
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-        res.status(404).json({ error: 'Token not found' });
+       // res.status(401).json({ error: ' refresh Token not found' });
     }
 
      
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
         if (err) {
-            res.status(403).json({ error: 'Invalid refresh token from promise' });
+             res.json({ error: 'Invalid refresh token' });
         }
-
-        const newAccessToken = generateAccessToken(decoded._id, decoded.email, decoded.role);
-        res.cookie('accessToken', newAccessToken, { maxAge: 1 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'Strict' });
-        req.user = decoded;
+        if (decoded) {
+            const newAccessToken = generateAccessToken(decoded._id, decoded.email, decoded.role);
+            res.cookie('accessToken', newAccessToken, { maxAge: 1 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'Strict' });
+            req.user = decoded;
+        }
+       
     });
 
 }

@@ -15,7 +15,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(helmet());
 app.use(cors({
-    origin: process.env.REACTURL,
+    origin: [process.env.REACTURL, 'http://localhost:3001'],
     methods: 'GET,POST,PUT,DELETE',
     credentials: true,
 }));
