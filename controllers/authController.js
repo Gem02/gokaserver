@@ -105,14 +105,14 @@ const login = async (req, res) =>{
         const refreshToken = generateRefreshToken(userInfo._id, userInfo.email, userInfo.role, userInfo.name);
         
         res.cookie('accessToken', accessToken, {
-            maxAge: 1 * 60 * 1000,
+            maxAge: 15 * 60 * 1000,
             httpOnly: true,
             secure: true,
             sameSite: 'None'
         });
 
         res.cookie('refreshToken', refreshToken, {
-            maxAge:  3 * 60 * 1000,
+            maxAge:  7 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             secure: true,
             sameSite: 'None'
@@ -120,10 +120,11 @@ const login = async (req, res) =>{
         
 
          return res.status(200).json({
-            _id: userInfo._id,
+            id: userInfo._id,
             name: userInfo.name,
             email: userInfo.email,
             role: userInfo.role,
+            
             profileImage: userInfo.profileImage,
             isVerified: userInfo.isVerified,
             upgraded: userInfo.upgraded

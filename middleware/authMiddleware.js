@@ -8,7 +8,7 @@ const verifyToken = async (req, res, next) =>{
             renewToken(req, res);
             next();
         } catch (error) {
-            console.log(error)
+            console.log('veryToken error. cant renew token');
         }
         
     } else{

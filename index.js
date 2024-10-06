@@ -9,6 +9,11 @@ const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoute');
 const stateRoutes = require('./routes/locationRoute');
 const userRoute = require('./routes/userRoute');
+const workersRoutes = require('./routes/workersRoute');
+const jobsRoutes = require('./routes/jobsRoute');
+const chatRouts = require('./routes/chatRoute');
+const messageRoutes = require('./routes/message');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 app.use(cookieParser());
@@ -22,7 +27,12 @@ app.use(cors({
 app.use(globalLimiter);
 app.use('/api/auth', authRoutes);
 app.use(stateRoutes);
-app.use('/user/verify', userRoute);   
+app.use('/user/verify', userRoute); 
+app.use('/api', workersRoutes) ;
+app.use('/api/job', jobsRoutes); 
+app.use('/chat', chatRouts);
+app.use('/message', messageRoutes);
+app.use('/review', reviewRoutes);
 
 mongoose.connect(process.env.MONGO_COMPASS).then(() => {
     console.log('MongoDB connected')
