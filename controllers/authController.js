@@ -147,7 +147,7 @@ const logout = (req, res) => {
         secure: true,
         sameSite: 'Strict'
     });
-    return res.status(200).json({ message: 'Logged out successfully' });
+    return res.status(200).json({ message: 'Logged out successfully', logout:true });
 
 }
 
