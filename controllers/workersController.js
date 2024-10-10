@@ -23,6 +23,9 @@ const getWorkersByLocation = async (req, res) => {
           query.lga = user.lga;
         } else if (filter === 'state') {
           query.state = user.state;
+        } else if(filter === 'all'){
+          const workers = await UserModel.find(query).select('-password');
+          return res.status(200).json(workers);
         } else {
           return res.status(400).json({ message: 'Invalid filter type' });
         }
@@ -35,8 +38,6 @@ const getWorkersByLocation = async (req, res) => {
             { specialization: { $regex: search, $options: 'i' } } // Search by specialization
           ];
         }
-  
-       
         const workers = await UserModel.find(query).select('-password');
         res.status(200).json(workers);
       } catch (error) {
@@ -47,6 +48,21 @@ const getWorkersByLocation = async (req, res) => {
       res.status(500).json({ message: 'User not authenticated' });
     }
   };
-  
 
-module.exports = {getWorkersByLocation}
+const categoryWorker = async(req, res) =>{
+  const {search} = req.query
+  let query = {}
+
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: 'i' } }, // Search by name
+      { businessName: { $regex: search, $options: 'i' } }, // Search by business name
+      { specialization: { $regex: search, $options: 'i' } } // Search by specialization
+    ];
+  }
+
+  const workers = await UserModel.find(query).select('-password');
+  return res.status(200).json(workers);
+}
+
+module.exports = {getWorkersByLocation, categoryWorker}

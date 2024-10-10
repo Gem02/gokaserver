@@ -14,6 +14,7 @@ const jobsRoutes = require('./routes/jobsRoute');
 const chatRouts = require('./routes/chatRoute');
 const messageRoutes = require('./routes/message');
 const reviewRoutes = require('./routes/reviewRoutes');
+const hireRoute = require('./routes/hireRoute');
 
 const app = express();
 app.use(cookieParser());
@@ -33,6 +34,7 @@ app.use('/api/job', jobsRoutes);
 app.use('/chat', chatRouts);
 app.use('/message', messageRoutes);
 app.use('/review', reviewRoutes);
+app.use('/hire', hireRoute);
 
 mongoose.connect(process.env.MONGO_COMPASS).then(() => {
     console.log('MongoDB connected')
