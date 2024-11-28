@@ -5,9 +5,22 @@ const jobSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  tag: {
-    type: [String],
+  phoneNumber: {
+    type: String,
     required: true,
+  },
+  workerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users',
+  },
+  secondPhoneNumber: {
+    type: String,
+  },
+  email: {
+    type: String
+  },
+  tag: {
+    type: String,
   },
   heading: {
     type: String,
@@ -16,6 +29,12 @@ const jobSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true,
+  },
+  fullName: {
+    type: String,
+  },
+  specialRequest: {
+    type: String
   },
   postedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -26,11 +45,16 @@ const jobSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Users',  // Reference to users who apply for the job
   }],
+  status: {
+    type: String,
+    enum:['null', 'pending', 'hired', 'accepted', 'inprogress', 'completed'], 
+    default: 'null',
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-const jobModal = mongoose.model('Job', jobSchema);
-module.exports = jobModal;
+const JobModal = mongoose.model('Job', jobSchema);
+module.exports = JobModal;

@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
-const {hireRequest} = require('../controllers/hireController');
+const {hired} = require('../controllers/hireController');
 
-router.post('/', verifyToken, hireRequest);
+
+router.post('/hired', verifyToken, hired);
 
 module.exports = router;

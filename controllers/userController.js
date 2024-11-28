@@ -1,17 +1,26 @@
 const UserModel = require('../models/User');
 const bcrypt = require('bcrypt');
+const JobModal = require('../models/Job');
+const Review = require('../models/review');
 
 const userInfo = async (req, res) =>{
     if (req.user) {
-        res.status(200).json({
-            user:  {
-                id: req.user.id,
-                name: req.user.name,
-                email: req.user.email,
-                role: req.user.role,}, 
-            role: req.user.role, 
-            verified: true
-          });
+        const userDetails = req.user;
+        const userInfo = await UserModel.findOne({_id: req.user.id})
+        if (userInfo) {
+            const userImage = userInfo?.profileImage 
+            res.status(200).json({
+                user:  {
+                    id: userDetails.id,
+                    name: userDetails.name,
+                    email: userDetails.email,
+                    role: userDetails.role,
+                    profileImage: userImage}, 
+                role: req.user.role, 
+                verified: true
+              });
+        }
+        
     } else {
         return res.status(401).json({ message: 'Unauthorized' });
     }
@@ -31,40 +40,10 @@ const checkToken = async (req, res) =>{
 const userProfile = async (req, res) => {
     try {
         const user = req.user.id;
-        const userData = await UserModel.findOne({_id: user});
+        const userData = await UserModel.findOne({_id: user}).select('-password');
 
         if (userData) {
-            const {
-                name,
-                email, 
-                phone, 
-                role, 
-                state, 
-                lga, 
-                area, 
-                isVerified, 
-                upgraded, 
-                businessName, 
-                specialization, 
-                description, 
-                profileImage 
-            } = userData;
-
-           return res.status(200).json({
-                name,
-                email, 
-                phone, 
-                role, 
-                state, 
-                lga, 
-                area, 
-                isVerified, 
-                upgraded, 
-                businessName, 
-                specialization, 
-                description, 
-                profileImage
-            });
+           return res.status(200).json({userData});
         }
     } catch (error) {
         return res.status(500).json({ message: 'Something went wrong' });
@@ -74,39 +53,31 @@ const userProfile = async (req, res) => {
 const otherUserProfile = async (req, res) => {
     try {
         const user = req.params.userId;
-        const userData = await UserModel.findOne({_id: user});
-        if (userData) {
-            const {
-                name,
-                email, 
-                phone, 
-                role, 
-                state, 
-                lga, 
-                area, 
-                isVerified, 
-                upgraded, 
-                businessName, 
-                specialization, 
-                description, 
-                profileImage 
-            } = userData;
-
-           return res.status(200).json({
-                name,
-                email, 
-                phone, 
-                role, 
-                state, 
-                lga, 
-                area, 
-                isVerified, 
-                upgraded, 
-                businessName, 
-                specialization, 
-                description, 
-                profileImage
-            });
+        const userData = await UserModel.findOne({_id: user}).select('-password');
+        
+        if (userData?.role === "artisan") {
+          const completedJobs = await JobModal.countDocuments({ workerId:user, status: 'completed' });
+          const activeJobs = await JobModal.countDocuments({ workerId:user, status: { $in: ['pending', 'hired', 'inprogress'] } });
+          const reviews = await Review.find({ workerId: user });
+            const averageRating = reviews.length
+                ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
+                : 0;
+          
+            
+           return res.status(200).json({profile: {userData}, stats:{completedJobs, activeJobs, reviews: { totalReviews: reviews.length, averageRating, }, }});
+        
+        } else if(userData?.role === 'employer') {
+        console.log(userData)
+            const completedJobs = await JobModal.countDocuments({ postedBy:user, status: 'completed' });
+            const activeJobs = await JobModal.countDocuments({ postedBy:user, status: { $in: ['pending', 'hired', 'inprogress'] } });
+    
+                // Aggregate review stats
+        
+            const reviews = await Review.find({ workerId: user });
+            const averageRating = reviews.length
+                ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
+                : 0;
+            return res.status(200).json({profile: {userData}, stats: {completedJobs, activeJobs, reviews: { totalReviews: reviews.length, averageRating, }, }});
         }
     } catch (error) {
        // return res.status(500).json({ message: 'Something went wrong' });
